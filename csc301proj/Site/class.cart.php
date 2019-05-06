@@ -32,8 +32,17 @@
             return $var;
         }
     
-    function addToCart($key, $items) {
-        $this->cart = $this->cart[$key] = $items;
+    function addToCart($key, $quantity) {
+        if (!isset($this->arr[$key])) {
+        $this->arr[$key] = $quantity;
+        }
+        else {
+            $this->arr[$key] = $quantity;
+        }
+    }
+    
+    function remove($key) {
+        unset($this->arr[$key]);
     }
 }
 

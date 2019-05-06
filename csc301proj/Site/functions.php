@@ -13,6 +13,12 @@ function searchParts($term, $database) {
 	return $parts;
 }
 
+function checkout($cart, $params, $database) {
+    $sql = file_get_contents('sql/checkout.sql');
+	$statement = $database->prepare($sql);
+	$statement->execute($params);
+}
+
 /*
 - Create a function named get() that:
 	- takes a parameter holding a $_GET key as a string

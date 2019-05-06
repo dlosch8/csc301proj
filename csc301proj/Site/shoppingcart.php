@@ -1,28 +1,35 @@
 <?php
-include('config.php');
 
-$error = "";
-$success = "";
+include('config.php');
+if (!isset($user['userid'])) {
+    header("Location:index.php");
+    echo "You must be logged in to view your shopping cart.";
+    sleep(3);
+    
+}
+$total = 0;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['term'])) {
-        $term = $_POST['term'];
-        $parts = searchParts($term, $database);
+    if (isset($_POST['key'])) {
+        $_SESSION['cart']->remove($_POST['key']);
     }
-    if (empty($parts) && isset($_POST['term'])) {
-        $error = "No parts were found";
-    } 
     
-    if (isset($_POST['addpart']) && !empty($_POST['qty'])) {
-       $_SESSION['cart']->addToCart($_POST['addpart'], $_POST['qty']);
-       $success = "Item: " . $_POST['addpart'] . "Quantity: " . $_POST['qty'] . "     Added to cart!";
-    }
-    elseif (isset($_POST['addpart']) && empty($_POST['qty'])) {
-        $error = "Please select a quantity.";
+    if (isset($_POST['checkout'])) {
+        foreach ($_SESSION['cart'] as $key => $qty) {
+            $price = $qty * 99.99;
+            $params = array(
+                'partname' => $key,
+                'qty' => $qty,
+                'price' => $price,
+                'userid' => $user['userid']
+            );
+            checkout($_SESSION['cart'], $params, $database);
+            $success = "Order placed successfully!";
+        }
     }
 }
-?>
 
+?>
 
 <!doctype html>
 <html>
@@ -85,68 +92,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <section id="banner">
 	<div class="inner">
-		<h2>Search for Parts</h2>
-		<form action="" method="POST">
-            <input type="text" name="term" placeholder="Enter search term" /><br>
-			<input class="button big" type="submit" value="Search" />
-		</form> 
-        <h3 style="color:red"><?php echo $error; ?></h3>
-        <h3 style="color:green"><?php echo $success; ?></h3>
+		<h2>My Shopping Cart</h2>
+        <?php if (isset($success)){
+            echo $success; 
+        }?>
+
+									<div class="table-wrapper">
+										<table style="color: white;">
+											<thead style="color: white;">
+												<tr>
+													<th>Quantity</th>
+													<th>Part Name</th>
+													<th>Price</th>
+												</tr>
+											</thead>
+											<tbody>
+                                            <?php foreach($_SESSION['cart'] as $key => $qty) : ?>
+												<tr>
+													<td><?php print_r($qty); ?></td>
+													<td><?php print_r($key); ?></td>
+													<td>$<?php echo ($qty * 99.99); ?></td>
+                                                    
+                                                    <td>
+                                                        <form action="" method="POST">
+                                                        <ul class="actions">
+                                                            <input type="hidden" name="key" value="<?php echo $key;?>" />
+                                                            <button class="button small" type="submit" >Remove</li>
+                                                        </ul>
+                                                        </form>
+                                                    </td>
+												</tr>
+                                                <?php $total += (99.99 * $qty); ?>
+                                            <?php endforeach; ?>
+											</tbody>
+											<tfoot>
+												<tr>
+													<td colspan="1"></td>
+                                                    <td>Total</td>
+													<td>$<?php echo $total; ?></td>
+												</tr>
+											</tfoot>
+										</table>
+                                        <form action="" method="POST">
+                                                        <ul class="actions">
+                                                            <input type="hidden" name="checkout" value="checkout" />
+                                                            <button class="button small" type="submit" >Checkout</li>
+                                                        </ul>
+                                                        </form>
+									</div>
+        
 	</div>
     </section>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Make</th>
-                    <th>Model</th>
-                    <th>Part</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($parts)) {
-
-                foreach($parts as $part) {
-                 ?><tr>
-                    <td><?php print_r($part['makename']);?></td>
-                    <td><?php print_r($part['modelname']);?></td>
-                    <td><?php print_r($part['partname']);?></td>
-                    <td>$99.99</td>
-                    <td>
-                    	<div class="3u 12u(2)">
-							<ul class="actions vertical small">
-                                <form action="" method="POST">
-                                <?php if (isset($_POST['term'])) {?>
-                                    <input type="hidden" name="term" value="<?php echo $_POST['term'];?>" />
-                                <?php } ?>
-                                    <input type="hidden" name="addpart" value="<?php print_r($part['partname']);?>" ></input>
-                                    <div class="row uniform">
-                                <div class="12u">
-                                    <div class="select-wrapper">
-                                        <select name="qty" id="category">
-                                            <option value="">Quantity</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                </div>
-								<li><button class="button special small" type="submit" >Add to Cart</a></li>
-                                
-                                </form>
-							</ul>
-						</div>
-                    </td>
-                   </tr>
-                <?php }
-            }?>
-                
-            </tbody>
-        </table>
-    </div>
     <footer id="footer">
 				<ul class="icons">
 					<li><a href="#" class="icon fa-twitter"><span class="label">Twitter</span></a></li>

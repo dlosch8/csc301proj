@@ -19,12 +19,7 @@ session_start();
 
 $current_url = basename($_SERVER['REQUEST_URI']);
 
-// if customerID is not set in the session and current URL not login.php redirect to login page
-//if(!isset($_SESSION['userid']) && $current_url != 'login.php') {
-//    header('location: login.php');
-//   die();
-//}
-// Else if session key customerID is set get $customer from the database
+
 if(isset($_SESSION['userid'])) {
     $sql = file_get_contents('sql/getUser.sql');
     $params = array(
@@ -38,4 +33,7 @@ if(isset($_SESSION['userid'])) {
     $user['name'] = trim($user['name'], "'");
     $user['address'] = trim($user['address'], "'");
     $user['city'] = trim($user['city'], "'");
+}
+if(!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = new Cart(array());
 }

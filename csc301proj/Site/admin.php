@@ -82,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php if (isset($_SESSION['userid'])) { ?>
                         <li><a href="">Logged in: <?php print_r($user['username']); ?></a></li>
                         <li><a href="logout.php">Log Out?</a></li>
+                        <li><a href="shoppingcart.php">View Cart</a></li>
                         <li><a href="settings.php">User Settings</a></li>
                         <?php if ($user['userid'] == 1) { ?>
                             <li><a href="admin.php">Admin Controls</a></li>
